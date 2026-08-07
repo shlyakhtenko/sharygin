@@ -1,0 +1,4 @@
+import Sharygin73Problem27.Area
+import Sharygin73Problem27.CentroidExistence
+import Sharygin73Problem27.SixAreas
+import Sharygin73Problem27.MedianTriangle

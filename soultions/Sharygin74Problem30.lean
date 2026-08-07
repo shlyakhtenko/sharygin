@@ -1,0 +1,10 @@
+import Sharygin74Problem30.Tarski
+import Sharygin74Problem30.Midpoint
+import Sharygin74Problem30.Affine
+import Sharygin74Problem30.Similarity
+import Sharygin74Problem30.AngleOrder
+import Sharygin74Problem30.Projection
+import Sharygin74Problem30.Centroid
+import Sharygin74Problem30.CentroidExistence
+import Sharygin74Problem30.Configuration
+import Sharygin74Problem30.Solution

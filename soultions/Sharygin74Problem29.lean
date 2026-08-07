@@ -1,0 +1,7 @@
+import Sharygin74Problem29.Tarski
+import Sharygin74Problem29.Midpoint
+import Sharygin74Problem29.Affine
+import Sharygin74Problem29.Similarity
+import Sharygin74Problem29.Grid
+import Sharygin74Problem29.Invariant
+import Sharygin74Problem29.Uniqueness

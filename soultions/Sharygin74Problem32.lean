@@ -1,0 +1,1 @@
+import Sharygin74Problem32.Solution

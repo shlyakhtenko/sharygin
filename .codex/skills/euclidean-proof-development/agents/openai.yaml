@@ -1,0 +1,4 @@
+interface:
+  display_name: "Euclidean Proof Development"
+  short_description: "Develop direct repository-grounded geometry proofs"
+  default_prompt: "Use $euclidean-proof-development to prove the next Euclidean geometry statement directly from this repository."

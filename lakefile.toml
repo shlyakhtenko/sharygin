@@ -1,0 +1,194 @@
+name = "Euclid"
+version = "0.1.0"
+defaultTargets = ["Euclid"]
+
+[[lean_lib]]
+name = "Euclid"
+
+[[lean_lib]]
+name = "Sharygin11Problem4"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin11Problem5"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin11Problem1"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin11Problem3"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin11Problem6"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin12Problem7"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin12Problem8"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin12Problem10"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin12Problem9"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin12Problem11"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin12Problem12"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin13Problem13"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin13Problem14"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin13Problem15"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin13Problem16"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin14Problem18"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin14Problem21"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin14Problem22"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin14Problem23"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem24"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem25"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem26"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem27"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem28"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem29"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin15Problem30"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem31"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem32"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem33"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem34"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem35"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem36"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem37"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin16Problem38"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin14Problem20"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin13Problem17"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin14Problem19"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin11Problem2"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin73Problem27"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin74Problem28"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin74Problem29"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin74Problem30"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin74Problem31"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin74Problem32"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin75Problem33"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin75Problem34"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin75Problem35"
+srcDir = "soultions"

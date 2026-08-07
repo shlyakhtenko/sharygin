@@ -1,0 +1,22 @@
+import Sharygin15Problem24.Tarski
+import Sharygin15Problem24.Midpoint
+import Sharygin15Problem24.Midline
+import Sharygin15Problem24.Affine
+import Sharygin15Problem24.Similarity
+import Sharygin15Problem24.Angle
+import Sharygin15Problem24.Scalar
+import Sharygin15Problem24.AngleOrder
+import Sharygin15Problem24.Projection
+import Sharygin15Problem24.Pythagorean
+import Sharygin15Problem24.TransportArea
+import Sharygin15Problem24.ChordPower
+import Sharygin15Problem24.RightTriangle
+import Sharygin15Problem24.MidpointSquares
+import Sharygin15Problem24.Parallelogram
+import Sharygin15Problem24.Median
+import Sharygin15Problem24.TriangleTransport
+import Sharygin15Problem24.AngleTransport
+import Sharygin15Problem24.TriangleArea
+import Sharygin15Problem24.Solution
+
+/-! Problem-local modules for Sharygin, PDF page 15, problem 24. -/

@@ -1,0 +1,11 @@
+import Sharygin74Problem28.Tarski
+import Sharygin74Problem28.Midpoint
+import Sharygin74Problem28.Affine
+import Sharygin74Problem28.Similarity
+import Sharygin74Problem28.Scalar
+import Sharygin74Problem28.Projection
+import Sharygin74Problem28.TriangleTurn
+import Sharygin74Problem28.ParallelAngles
+import Sharygin74Problem28.Grid
+import Sharygin74Problem28.Ratio
+import Sharygin74Problem28.Solution
