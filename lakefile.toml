@@ -302,6 +302,62 @@ name = "Sharygin23Problem79"
 srcDir = "soultions"
 
 [[lean_lib]]
+name = "Sharygin23Problem80"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin23Problem81"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin23Problem82"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin24Problem83"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin24Problem84"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin24Problem85"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin24Problem86"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin24Problem87"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin25Problem88"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin25Problem89"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin25Problem90"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin25Problem91"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin25Problem92"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin25Problem93"
+srcDir = "soultions"
+
+[[lean_lib]]
 name = "Sharygin14Problem20"
 srcDir = "soultions"
 
