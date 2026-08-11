@@ -1,0 +1,1 @@
+import Sharygin22Problem73.Solution

@@ -342,6 +342,69 @@ class Axioms : Prop where
 
 end AngleMeasurement
 
+namespace Trigonometry
+
+/--
+An explicit right-triangle realization of a directed angle.
+
+This is data, not an existence or uniqueness assertion.  Results comparing
+different realizations belong in the proofs that need them.
+-/
+structure RightTriangleRealization
+    (M : AngleMeasurement G) (x : DirectedAngle G) where
+  angleVertex : G.Point
+  rightVertex : G.Point
+  hypotenusePoint : G.Point
+  angleVertex_ne_rightVertex : angleVertex ≠ rightVertex
+  rightVertex_ne_hypotenusePoint : rightVertex ≠ hypotenusePoint
+  angleVertex_ne_hypotenusePoint : angleVertex ≠ hypotenusePoint
+  same_angle :
+    M.measure ⟨hypotenusePoint, angleVertex, rightVertex, x.sense⟩ =
+      M.measure x
+  right_angle :
+    M.twice
+        (M.measure
+          ⟨angleVertex, rightVertex, hypotenusePoint, x.sense⟩) =
+      M.halfTurn
+
+/-- Sine read directly from a chosen right-triangle realization. -/
+def sin
+    (L : LengthMeasurement G)
+    {M : AngleMeasurement G}
+    {x : DirectedAngle G}
+    (realization : RightTriangleRealization G M x) :
+    L.scalar.Carrier :=
+  L.scalar.mul
+    (L.length realization.rightVertex realization.hypotenusePoint)
+    (L.scalar.inv
+      (L.length realization.angleVertex realization.hypotenusePoint))
+
+/-- Cosine read directly from a chosen right-triangle realization. -/
+def cos
+    (L : LengthMeasurement G)
+    {M : AngleMeasurement G}
+    {x : DirectedAngle G}
+    (realization : RightTriangleRealization G M x) :
+    L.scalar.Carrier :=
+  L.scalar.mul
+    (L.length realization.angleVertex realization.rightVertex)
+    (L.scalar.inv
+      (L.length realization.angleVertex realization.hypotenusePoint))
+
+/-- Cotangent read directly as adjacent leg divided by opposite leg. -/
+def cot
+    (L : LengthMeasurement G)
+    {M : AngleMeasurement G}
+    {x : DirectedAngle G}
+    (realization : RightTriangleRealization G M x) :
+    L.scalar.Carrier :=
+  L.scalar.mul
+    (L.length realization.angleVertex realization.rightVertex)
+    (L.scalar.inv
+      (L.length realization.rightVertex realization.hypotenusePoint))
+
+end Trigonometry
+
 /--
 Four cyclically ordered points form a rectangle when their diagonals have a common midpoint,
 the first three vertices are noncollinear, and one corner is right.
@@ -385,6 +448,17 @@ variable
 /-- The area of a triangle is the measure of its closed triangular region. -/
 def triangleArea (a b c : G.Point) : L.scalar.Carrier :=
   A.area (G.TriangleRegion a b c)
+
+/--
+The circumference of a circle of radius `center radiusPoint`.
+
+This is a derived measurement expressed using the same distinguished `pi`
+as disk area; it does not enlarge the foundational axiom class.
+-/
+def circumference (center radiusPoint : G.Point) : L.scalar.Carrier :=
+  L.scalar.mul
+    (L.scalar.add L.scalar.one L.scalar.one)
+    (L.scalar.mul A.pi (L.length center radiusPoint))
 
 /-- Two regions are area-disjoint when their overlap has area zero. -/
 def AreaDisjoint (X Y : G.Region) : Prop :=
