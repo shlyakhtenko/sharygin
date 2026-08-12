@@ -19,6 +19,7 @@ open Soultions.Sharygin.Page14.Problem20.Scalar
 open Soultions.Sharygin.Page14.Problem20.Median
 open Soultions.Sharygin.Page14.Problem20.TriangleTransport
 open Soultions.Sharygin.Page14.Problem20.MidpointClosure
+open Soultions.Sharygin.Page14.Problem20.Centroid
 
 variable (G : Plane) [G.Axioms]
 
@@ -146,6 +147,27 @@ theorem reflected_center_eq_center_of_chord_line
     simpa [← hcenterMidpoint] using hreflected.radius
   exact (Plane.Axioms.congruenceIdentity circle.center reflected circle.center hzero).symm
 
+/-- A midpoint of a non-diameter chord is not on the radius line through either endpoint. -/
+theorem chord_midpoint_off_endpoint_radius
+    {circle : Circle G}
+    {p q midpoint : G.Point}
+    (hpq : p ≠ q)
+    (hmidpoint : G.Midpoint p midpoint q)
+    (hnotDiameter : ¬G.Collinear p q circle.center) :
+    ¬G.Collinear circle.center q midpoint := by
+  intro hcenterQMidpoint
+  have hqMidpoint : q ≠ midpoint :=
+    midpoint_right_ne G hmidpoint hpq
+  have hqMidpointP : G.Collinear q midpoint p :=
+    collinear_cyclic G (midpoint_collinear G hmidpoint)
+  have hqMidpointCenter : G.Collinear q midpoint circle.center :=
+    collinear_cyclic G hcenterQMidpoint
+  have hqpCenter : G.Collinear q p circle.center :=
+    collinear_three_on_line G hqMidpoint
+      (collinear_cyclic G (collinear_refl_left G q midpoint))
+      hqMidpointP hqMidpointCenter
+  exact hnotDiameter (collinear_swap G hqpCenter)
+
 /-- In a nondegenerate inscribed triangle, the circumcenter cannot lie on two adjacent side
 lines.  This isolates the only degeneracies needed by the affine closure below. -/
 theorem not_two_diameter_side_lines
@@ -202,6 +224,85 @@ theorem translated_second_vertex_candidate
   exact ⟨x, hbx,
     congruent_trans G hax_reflectedB_a
       (Plane.Axioms.congruenceReversal construction.reflectedB triangle.a)⟩
+
+/--
+The common midpoint for the first two reflected pairs in the ordinary affine case.  No
+midpoint conclusion is assumed: the result is obtained by composing the two parallelograms
+already supplied by the side-midpoint reflections.  The remaining construction theorem will
+discharge the explicitly displayed collinearity exceptions separately.
+-/
+theorem first_two_reflected_pairs_common_midpoint_of_nondegenerate
+    {circle : Circle G}
+    (triangle : CircumscribedTriangle G circle)
+    (construction : SideReflectionConstruction G triangle)
+    (hmidpointA_off_centerC :
+      ¬G.Collinear circle.center triangle.c construction.midpointA)
+    (hmidpointB_off_centerC :
+      ¬G.Collinear circle.center triangle.c construction.midpointB)
+    (hreflectedA_b_reflectedB :
+      ¬G.Collinear construction.reflectedA triangle.b construction.reflectedB)
+    (hcenter_reflectedA_reflectedB :
+      ¬G.Collinear circle.center construction.reflectedA construction.reflectedB)
+    (hreflectedA_reflectedB_a :
+      ¬G.Collinear construction.reflectedA construction.reflectedB triangle.a) :
+    ∃ n,
+      G.Midpoint construction.reflectedA n triangle.a ∧
+      G.Midpoint construction.reflectedB n triangle.b := by
+  exact adjacent_parallelograms_common_midpoint G triangle.noncollinear
+    (pointReflection_as_midpoint G construction.center_reflectedA)
+    construction.midpointA_isMidpoint
+    (pointReflection_as_midpoint G construction.center_reflectedB)
+    construction.midpointB_isMidpoint
+    hmidpointA_off_centerC hmidpointB_off_centerC
+    hreflectedA_b_reflectedB hcenter_reflectedA_reflectedB
+    hreflectedA_reflectedB_a
+
+/-- The preceding ordinary-case closure with its two radius-line conditions derived from the
+fact that the adjacent chords are not diameters. -/
+theorem first_two_reflected_pairs_common_midpoint_of_no_adjacent_diameters
+    {circle : Circle G}
+    (triangle : CircumscribedTriangle G circle)
+    (construction : SideReflectionConstruction G triangle)
+    (hbc_notDiameter :
+      ¬G.Collinear triangle.b triangle.c circle.center)
+    (hca_notDiameter :
+      ¬G.Collinear triangle.c triangle.a circle.center)
+    (hreflectedA_b_reflectedB :
+      ¬G.Collinear construction.reflectedA triangle.b construction.reflectedB)
+    (hcenter_reflectedA_reflectedB :
+      ¬G.Collinear circle.center construction.reflectedA construction.reflectedB)
+    (hreflectedA_reflectedB_a :
+      ¬G.Collinear construction.reflectedA construction.reflectedB triangle.a) :
+    ∃ n,
+      G.Midpoint construction.reflectedA n triangle.a ∧
+      G.Midpoint construction.reflectedB n triangle.b := by
+  have hbc : triangle.b ≠ triangle.c := by
+    intro h
+    apply triangle.noncollinear
+    rw [h]
+    exact collinear_refl_right G triangle.a triangle.c
+  have hca : triangle.c ≠ triangle.a := by
+    intro h
+    apply triangle.noncollinear
+    rw [h]
+    exact collinear_cyclic G (collinear_refl_left G triangle.a triangle.b)
+  have hmidpointA_off :
+      ¬G.Collinear circle.center triangle.c construction.midpointA :=
+    chord_midpoint_off_endpoint_radius G hbc
+      construction.midpointA_isMidpoint hbc_notDiameter
+  have hac_notDiameter :
+      ¬G.Collinear triangle.a triangle.c circle.center := by
+    intro h
+    exact hca_notDiameter (collinear_swap G h)
+  have hmidpointB_off :
+      ¬G.Collinear circle.center triangle.c construction.midpointB :=
+    chord_midpoint_off_endpoint_radius G hca.symm
+      (midpoint_symm G construction.midpointB_isMidpoint)
+      hac_notDiameter
+  exact first_two_reflected_pairs_common_midpoint_of_nondegenerate G
+    triangle construction hmidpointA_off hmidpointB_off
+    hreflectedA_b_reflectedB hcenter_reflectedA_reflectedB
+    hreflectedA_reflectedB_a
 
 /-- The exact geometric output required by both parts of problem 20. -/
 structure SolutionData

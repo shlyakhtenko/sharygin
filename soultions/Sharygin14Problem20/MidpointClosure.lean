@@ -363,5 +363,62 @@ theorem opposite_parallels_diagonals_bisect
   exact ⟨o, hac,
     pointReflection_as_midpoint G hbd'⟩
 
+/--
+The nondegenerate affine core of the orthocenter closure.  Two adjacent parallelograms
+`O-B-A'-C` and `O-C-B'-A` compose to the parallelogram `A'-B'-A-B`.  The hypotheses listed
+as noncollinear are precisely the line-degeneracies separated out by the caller.
+-/
+theorem adjacent_parallelograms_common_midpoint
+    {o a b c midpointA midpointB reflectedA reflectedB : G.Point}
+    (habc : ¬G.Collinear a b c)
+    (hcenterA : G.Midpoint o midpointA reflectedA)
+    (hsideA : G.Midpoint b midpointA c)
+    (hcenterB : G.Midpoint o midpointB reflectedB)
+    (hsideB : G.Midpoint c midpointB a)
+    (hmidpointA_off_oc : ¬G.Collinear o c midpointA)
+    (hmidpointB_off_oc : ¬G.Collinear o c midpointB)
+    (hreflectedA_b_reflectedB : ¬G.Collinear reflectedA b reflectedB)
+    (ho_reflectedA_reflectedB : ¬G.Collinear o reflectedA reflectedB)
+    (hreflectedA_reflectedB_a : ¬G.Collinear reflectedA reflectedB a) :
+    ∃ n,
+      G.Midpoint reflectedA n a ∧
+      G.Midpoint reflectedB n b := by
+  have hoc : o ≠ c := by
+    intro h
+    subst c
+    exact hmidpointA_off_oc (collinear_refl_left G o midpointA)
+  have hoc_reflectedA_b : Parallel G o c reflectedA b :=
+    pointReflection_image_parallel G hoc hmidpointA_off_oc
+      (midpoint_as_pointReflection G hcenterA)
+      (pointReflection_symm G (midpoint_as_pointReflection G hsideA))
+  have hoc_reflectedB_a : Parallel G o c reflectedB a :=
+    pointReflection_image_parallel G hoc hmidpointB_off_oc
+      (midpoint_as_pointReflection G hcenterB)
+      (midpoint_as_pointReflection G hsideB)
+  have hreflectedA_b_reflectedB_a :
+      Parallel G reflectedA b reflectedB a :=
+    parallel_of_common_parallel G
+      (parallel_symm G hoc_reflectedA_b)
+      (parallel_symm G hoc_reflectedB_a)
+      hreflectedA_b_reflectedB
+  have hmidpoints_reflectedSide :
+      Parallel G midpointA midpointB reflectedA reflectedB :=
+    midpoint_connector_parallel G ho_reflectedA_reflectedB
+      hcenterA hcenterB
+  have hcba : ¬G.Collinear c b a := by
+    intro h
+    exact habc (collinear_cyclic G (collinear_swap_last G h))
+  have hmidpoints_originalSide : Parallel G midpointA midpointB b a :=
+    midpoint_connector_parallel G hcba
+      (midpoint_symm G hsideA) hsideB
+  have hreflectedA_reflectedB_ab :
+      Parallel G reflectedA reflectedB a b :=
+    parallel_of_common_parallel G
+      (parallel_symm G hmidpoints_reflectedSide)
+      (parallel_symm G (parallel_reverse_right G hmidpoints_originalSide))
+      hreflectedA_reflectedB_a
+  exact opposite_parallels_diagonals_bisect G
+    hreflectedA_reflectedB_ab hreflectedA_b_reflectedB_a
+
 
 end Soultions.Sharygin.Page14.Problem20.MidpointClosure

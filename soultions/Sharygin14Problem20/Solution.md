@@ -57,6 +57,10 @@ diameter cases combined.
 
 The current affine reduction now composes the two half-turns which take `O` first to `A'`
 and then to `A`. Applying that composition to `C` gives a candidate for `B'`, and the formal
-proof establishes the first required identifying distance from `A`. What remains is the
-problem-local point-uniqueness step (including its collinear case), followed cyclically for
-`C'`; until those steps are proved, the final theorem remains conditional as stated above.
+proof establishes the first required identifying distance from `A`. It also proves the full
+common-midpoint conclusion in the ordinary affine case: the two side-reflection
+parallelograms give two pairs of opposite parallel lines, whose diagonals have a common
+midpoint. The conditions saying that the relevant radius lines are nondegenerate are now
+derived from the assertion that the corresponding chords are not diameters. What remains is
+to discharge the exceptional collinear cases (including a diameter side), followed cyclically
+for `C'`; until those cases are proved, the final theorem remains conditional as stated above.
