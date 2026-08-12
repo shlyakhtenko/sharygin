@@ -129,6 +129,42 @@ theorem circumcenter_eq_chord_midpoint
     exact midpoint_unique G hcenterMidpoint hgiven
   · exact False.elim (hpq hpqEq)
 
+/-- If a chord is a diameter, reflecting its circumcenter in the chord midpoint fixes it. -/
+theorem reflected_center_eq_center_of_chord_line
+    {circle : Circle G}
+    {p q midpoint reflected : G.Point}
+    (hp : G.OnCircle circle p)
+    (hq : G.OnCircle circle q)
+    (hpq : p ≠ q)
+    (hmidpoint : G.Midpoint p midpoint q)
+    (hreflected : PointReflection G midpoint circle.center reflected)
+    (hcenterLine : G.Collinear p q circle.center) :
+    reflected = circle.center := by
+  have hcenterMidpoint : circle.center = midpoint :=
+    circumcenter_eq_chord_midpoint G hp hq hpq hmidpoint hcenterLine
+  have hzero : G.Congruent circle.center reflected circle.center circle.center := by
+    simpa [← hcenterMidpoint] using hreflected.radius
+  exact (Plane.Axioms.congruenceIdentity circle.center reflected circle.center hzero).symm
+
+/-- In a nondegenerate inscribed triangle, the circumcenter cannot lie on two adjacent side
+lines.  This isolates the only degeneracies needed by the affine closure below. -/
+theorem not_two_diameter_side_lines
+    {circle : Circle G}
+    (triangle : CircumscribedTriangle G circle) :
+    ¬(G.Collinear triangle.b triangle.c circle.center ∧
+      G.Collinear triangle.c triangle.a circle.center) := by
+  rintro ⟨hbc, hca⟩
+  have hc_ne_center : triangle.c ≠ circle.center :=
+    (center_ne_onCircle G triangle.c_onCircle).symm
+  have hcb : G.Collinear triangle.c circle.center triangle.b :=
+    collinear_cyclic G hbc
+  have hca' : G.Collinear triangle.c circle.center triangle.a :=
+    collinear_swap_last G hca
+  exact triangle.noncollinear
+    (collinear_three_on_line G hc_ne_center hca' hcb
+      (collinear_cyclic G
+        (collinear_refl_left G triangle.c circle.center)))
+
 /-- The exact geometric output required by both parts of problem 20. -/
 structure SolutionData
     (L : LengthMeasurement G)
