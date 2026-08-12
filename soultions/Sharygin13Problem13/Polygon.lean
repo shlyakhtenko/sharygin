@@ -28,6 +28,48 @@ structure TangentialSide (circle : Circle G) where
   tangent : G.TangentAt circle contact through
   start_on_tangent : G.Collinear contact through start
   finish_on_tangent : G.Collinear contact through finish
+  /-- The point of tangency lies on the polygon side, rather than merely on its line. -/
+  contact_on_side :
+    contact = start ∨ contact = finish ∨ G.Bet start contact finish
+
+/-- Consecutive sides meet at their named endpoints. -/
+def Joined
+    {circle : Circle G} :
+    List (TangentialSide G circle) → Prop
+  | [] => True
+  | [_] => True
+  | side :: next :: rest =>
+      side.finish = next.start ∧ Joined (next :: rest)
+
+def firstStart
+    {circle : Circle G} :
+    List (TangentialSide G circle) → Option G.Point
+  | [] => none
+  | side :: _ => some side.start
+
+def lastFinish
+    {circle : Circle G} :
+    List (TangentialSide G circle) → Option G.Point
+  | [] => none
+  | [side] => some side.finish
+  | _ :: next :: rest => lastFinish (next :: rest)
+
+/--
+An ordered boundary of a polygon circumscribed about a circle.
+
+The length and closure fields say that this is a closed polygonal chain, while
+`center_on_common_side` gives it a consistent interior side.  Its area below is the standard
+fan decomposition from the enclosed center.
+-/
+structure CircumscribedPolygon (circle : Circle G) where
+  sides : List (TangentialSide G circle)
+  at_least_three : ∃ side₁ side₂ side₃ rest,
+    sides = side₁ :: side₂ :: side₃ :: rest
+  joined : Joined G sides
+  closed : lastFinish G sides = firstStart G sides
+  center_on_common_side :
+    ∃ sense, ∀ side, side ∈ sides →
+      G.Orientation side.start side.finish circle.center = some sense
 
 /-- A tangential side and the circle center form a nondegenerate triangle. -/
 theorem TangentialSide.center_start_finish_nondegenerate
@@ -150,27 +192,69 @@ def perimeter
         (L.length side.start side.finish)
         (perimeter L sides)
 
-/--
-Twice the area of a circumscribed polygon equals radius times perimeter, equivalently
-`area = radius * semiperimeter`.
--/
-theorem circumscribed_polygon_double_area
+/-- The region obtained by joining the enclosed center to all boundary sides. -/
+def fanRegion
+    {circle : Circle G} :
+    List (TangentialSide G circle) → G.Region
+  | [] => Plane.Region.empty (G := G)
+  | side :: sides =>
+      Plane.Region.union (G := G)
+        (G.TriangleRegion circle.center side.start side.finish)
+        (fanRegion sides)
+
+/-- Successive fan triangles overlap only in area-zero boundary pieces. -/
+def FanDisjoint
+    (A : AreaMeasurement G L)
+    {circle : Circle G} :
+    List (TangentialSide G circle) → Prop
+  | [] => True
+  | side :: sides =>
+      A.AreaDisjoint
+          (G.TriangleRegion circle.center side.start side.finish)
+          (fanRegion (G := G) sides) ∧
+        FanDisjoint A sides
+
+/-- Finite additivity identifies the fan-region area with the sum of its triangle areas. -/
+theorem fan_region_area
     (M : AngleMeasurement G) [M.Axioms]
     (L : LengthMeasurement G) [L.Axioms]
     (A : AreaMeasurement G L)
     [AreaMeasurement.Axioms (G := G) A M]
     {circle : Circle G}
     (sides : List (TangentialSide G circle))
+    (disjoint : FanDisjoint (G := G) A sides) :
+    A.area (fanRegion (G := G) sides) = fanArea (G := G) A sides := by
+  induction sides with
+  | nil =>
+      simpa [fanRegion, fanArea] using
+        (AreaMeasurement.Axioms.empty_area (A := A) M)
+  | cons side sides ih =>
+      simp only [fanRegion, fanArea]
+      rw [AreaMeasurement.Axioms.finite_additive M _ _ disjoint.1,
+        ih disjoint.2]
+      rfl
+
+/--
+Twice the area of a circumscribed polygon equals radius times perimeter, equivalently
+`area = radius * semiperimeter`.
+-/
+theorem circumscribed_polygon_fan_double_area
+    (M : AngleMeasurement G) [M.Axioms]
+    (L : LengthMeasurement G) [L.Axioms]
+    (A : AreaMeasurement G L)
+    [AreaMeasurement.Axioms (G := G) A M]
+    {circle : Circle G}
+    (polygon : CircumscribedPolygon G circle)
     (sense : RotationSense) :
     L.scalar.add
-        (fanArea (G := G) A sides)
-        (fanArea (G := G) A sides) =
+        (fanArea (G := G) A polygon.sides)
+        (fanArea (G := G) A polygon.sides) =
       L.scalar.mul
         (L.length circle.center circle.radiusPoint)
-        (perimeter (G := G) L sides) := by
+        (perimeter (G := G) L polygon.sides) := by
   letI : OrderedScalar.Axioms L.scalar :=
     LengthMeasurement.Axioms.scalar_axioms
-  induction sides with
+  induction polygon.sides with
   | nil =>
       change
         L.scalar.add L.scalar.zero L.scalar.zero =
@@ -243,7 +327,27 @@ theorem circumscribed_polygon_double_area
               (L.length circle.center circle.radiusPoint)
               (L.scalar.add
                 (L.length side.start side.finish)
-                (perimeter (G := G) L sides)) :=
+              (perimeter (G := G) L sides)) :=
           (OrderedScalar.Axioms.left_distrib _ _ _).symm
+
+/-- Twice the measured polygon region is radius times perimeter. -/
+theorem circumscribed_polygon_double_area
+    (M : AngleMeasurement G) [M.Axioms]
+    (L : LengthMeasurement G) [L.Axioms]
+    (A : AreaMeasurement G L)
+    [AreaMeasurement.Axioms (G := G) A M]
+    {circle : Circle G}
+    (polygon : CircumscribedPolygon G circle)
+    (disjoint : FanDisjoint (G := G) A polygon.sides)
+    (sense : RotationSense) :
+    L.scalar.add
+        (A.area (fanRegion (G := G) polygon.sides))
+        (A.area (fanRegion (G := G) polygon.sides)) =
+      L.scalar.mul
+        (L.length circle.center circle.radiusPoint)
+        (perimeter (G := G) L polygon.sides) := by
+  rw [fan_region_area G M L A polygon.sides disjoint]
+  exact circumscribed_polygon_fan_double_area
+    G M L A polygon sense
 
 end Soultions.Sharygin.Page13.Problem13.Polygon

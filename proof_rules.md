@@ -50,10 +50,42 @@ Consult this file before starting each new geometry problem in this repository.
 A completed problem must:
 
 - state and prove a final theorem in its main solution file;
+- define the geometric objects occurring in the source problem, rather than replacing them with
+  unrelated scalar variables or a certificate that already contains the desired computation;
+- be checked against the source statement for the correct hypotheses, conclusion, page, problem
+  number, and interpretation of any diagram;
 - contain no `sorry`;
 - contain no solution-local `axiom` or theorem-shaped substitute for a missing result;
 - have no hypothesis that merely assumes the desired geometric conclusion;
+- have no configuration field that assumes a substantive intermediate theorem merely to make the
+  final calculation go through; configuration fields may record the original givens, chosen
+  auxiliary constructions, exact incidence or region decompositions, and explicit congruence or
+  symmetry witnesses;
+- include a `Solution.md` in the problem's supporting folder which:
+  - restates the source problem in natural language;
+  - gives the natural-language proof actually implemented by the Lean files;
+  - identifies the geometric configuration data used by the final theorem;
+  - explains how each nontrivial configuration field follows from the source givens or is an
+    explicitly chosen auxiliary construction; and
+  - records any remaining formalization caveat instead of presenting a partial certificate as a
+    completed geometry proof;
 - compile directly with `lake env lean` on its main solution file;
 - compile its problem-local Lake target, when one exists;
 - leave the full project build passing; and
 - pass a source audit for accidental imports of other problem-local modules.
+
+## Audit before declaring completion
+
+For every new or revised problem, compare the PDF statement, `Configuration.lean`, and the final
+theorem side by side.  In particular, check that:
+
+- every hypothesis in Lean is either in the source problem or is justified construction data;
+- the conclusion is the source conclusion, not only an algebraic consequence of an assumed
+  geometric formula;
+- named regions such as a polygon, sector, lens, covered part, or uncovered part are defined from
+  points, segments, circles, and region operations;
+- equal-area, proportionality, trigonometric, or metric formulas are proved unless they are among
+  the approved top-level axioms;
+- symmetry and finite-partition records contain actual regions and rigid motions, not precomputed
+  scalar areas; and
+- `Solution.md` matches the Lean proof after any refactor.

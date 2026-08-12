@@ -1,2 +1,4 @@
 import Sharygin14Problem19.ConversePitot
-
+import Sharygin14Problem19.Configuration
+import Sharygin14Problem19.Construction
+import Sharygin14Problem19.Solution

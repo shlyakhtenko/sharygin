@@ -1,2 +1,1 @@
-import Sharygin13Problem17.Construction
-
+import Sharygin13Problem17.Solution

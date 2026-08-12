@@ -1,3 +1,4 @@
 import Sharygin11Problem2.Area
 import Sharygin11Problem2.CentroidExistence
 import Sharygin11Problem2.SixAreas
+import Sharygin11Problem2.Solution

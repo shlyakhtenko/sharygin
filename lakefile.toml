@@ -358,6 +358,26 @@ name = "Sharygin25Problem93"
 srcDir = "soultions"
 
 [[lean_lib]]
+name = "Sharygin26Problem94"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin26Problem95"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin26Problem96"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin26Problem97"
+srcDir = "soultions"
+
+[[lean_lib]]
+name = "Sharygin26Problem98"
+srcDir = "soultions"
+
+[[lean_lib]]
 name = "Sharygin14Problem20"
 srcDir = "soultions"
 

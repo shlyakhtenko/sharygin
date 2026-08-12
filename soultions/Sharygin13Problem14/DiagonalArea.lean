@@ -26,12 +26,12 @@ structure DiagonalSine
     {a b c d o : G.Point}
     (altitudeB : AltitudePair G a c b)
     (altitudeD : AltitudePair G a c d) where
-  b_foot : altitudeB.foot = o
-  d_foot : altitudeD.foot = o
   value : L.scalar.Carrier
+  /-- The altitude from `b` is `ob · sin(angle between the diagonals)`. -/
   b_height :
     L.length altitudeB.foot b =
       L.scalar.mul (L.length o b) value
+  /-- The vertical angle at `o` has the same sine, so the altitude from `d` is `od · value`. -/
   d_height :
     L.length altitudeD.foot d =
       L.scalar.mul (L.length o d) value
@@ -98,34 +98,8 @@ theorem quadrilateral_double_area
           (L.length config.o config.d) :=
     LengthMeasurement.Axioms.bet_additive
       config.b config.o config.d config.bd_crosses
-  have hbheight :
-      L.length config.o config.b =
-        L.scalar.mul
-          (L.length config.o config.b)
-          config.diagonalSine.value := by
-    calc
-      L.length config.o config.b =
-          L.length config.altitudeB.foot config.b := by
-        rw [config.diagonalSine.b_foot]
-      _ = L.scalar.mul
-            (L.length config.o config.b)
-            config.diagonalSine.value :=
-        config.diagonalSine.b_height
-  have hdheight :
-      L.length config.o config.d =
-        L.scalar.mul
-          (L.length config.o config.d)
-          config.diagonalSine.value := by
-    calc
-      L.length config.o config.d =
-          L.length config.altitudeD.foot config.d := by
-        rw [config.diagonalSine.d_foot]
-      _ = L.scalar.mul
-            (L.length config.o config.d)
-            config.diagonalSine.value :=
-        config.diagonalSine.d_height
-  rw [config.diagonalSine.b_foot, hbheight] at hB
-  rw [config.diagonalSine.d_foot, hdheight] at hD
+  rw [config.diagonalSine.b_height] at hB
+  rw [config.diagonalSine.d_height] at hD
   change
     L.scalar.add
         (L.scalar.add
