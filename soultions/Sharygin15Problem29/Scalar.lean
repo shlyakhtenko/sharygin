@@ -3,7 +3,7 @@ import Euclid
 /-!
 # Scalar identities for Sharygin, PDF page 15, problem 29
 
-Only the ring identities used in this problem's determinant calculation are
+Only the ordered-field identities needed by the synthetic length and area calculations are
 derived here.
 -/
 
@@ -32,6 +32,49 @@ theorem add_left_cancel {x y z : S.Carrier}
       (OrderedScalar.Axioms.add_assoc _ _ _).symm
     _ = S.add S.zero z := by rw [neg_add S]
     _ = z := OrderedScalar.Axioms.zero_add z
+
+theorem two_ne_zero :
+    S.add S.one S.one ≠ S.zero := by
+  intro htwo
+  have hone_le_zero : S.le S.one S.zero := by
+    have h := OrderedScalar.Axioms.add_le_add_right
+      S.zero S.one S.one OrderedScalar.Axioms.zero_le_one
+    rw [OrderedScalar.Axioms.zero_add, htwo] at h
+    exact h
+  have hzero_one := OrderedScalar.Axioms.le_antisymm
+    S.zero S.one OrderedScalar.Axioms.zero_le_one hone_le_zero
+  exact OrderedScalar.Axioms.zero_ne_one hzero_one
+
+theorem add_self_injective {x y : S.Carrier}
+    (h : S.add x x = S.add y y) : x = y := by
+  let two := S.add S.one S.one
+  have htwo : two ≠ S.zero := two_ne_zero S
+  have hmul_x : S.mul two x = S.add x x := by
+    dsimp [two]
+    rw [OrderedScalar.Axioms.mul_comm,
+      OrderedScalar.Axioms.left_distrib,
+      OrderedScalar.Axioms.mul_one]
+  have hmul_y : S.mul two y = S.add y y := by
+    dsimp [two]
+    rw [OrderedScalar.Axioms.mul_comm,
+      OrderedScalar.Axioms.left_distrib,
+      OrderedScalar.Axioms.mul_one]
+  have hscaled := congrArg (S.mul (S.inv two))
+    (hmul_x.trans (h.trans hmul_y.symm))
+  calc
+    x = S.mul S.one x := (OrderedScalar.Axioms.one_mul x).symm
+    _ = S.mul (S.mul (S.inv two) two) x := by
+      rw [OrderedScalar.Axioms.mul_comm (S.inv two) two,
+        OrderedScalar.Axioms.mul_inv two htwo]
+    _ = S.mul (S.inv two) (S.mul two x) :=
+      OrderedScalar.Axioms.mul_assoc _ _ _
+    _ = S.mul (S.inv two) (S.mul two y) := hscaled
+    _ = S.mul (S.mul (S.inv two) two) y :=
+      (OrderedScalar.Axioms.mul_assoc _ _ _).symm
+    _ = S.mul S.one y := by
+      rw [OrderedScalar.Axioms.mul_comm (S.inv two) two,
+        OrderedScalar.Axioms.mul_inv two htwo]
+    _ = y := OrderedScalar.Axioms.one_mul y
 
 theorem neg_unique {x y : S.Carrier}
     (h : S.add x y = S.zero) :

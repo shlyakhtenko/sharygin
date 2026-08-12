@@ -1,124 +1,231 @@
-import Sharygin15Problem29.Coordinates
+import Euclid
+import Sharygin15Problem29.Synthetic
+import Sharygin15Problem29.DiagonalArea
 
 /-!
 # Sharygin, PDF page 15, problem 29
 
-In unit oblique coordinates along the parallelogram sides, the four angle bisectors meet at
-`P,Q,R,S` as defined in `Coordinates`.  Their diagonal vectors are `(a-b,0)` and `(0,a-b)`.
-Consequently the answer is
+The formal theorem is entirely synthetic.  It proves that the four actual internal-bisector
+intersections form a rectangle and computes its area from its actual crossing diagonals.  The
+answer is stated in the geometrically exact form
 
-`area = (a-b)² sin(α) / 2`.
+`2 area = |a - b|² sin(alpha)`:
 
-The theorem states the doubled-area identity, avoiding a division operation.
+`diagonalDifference` is the nonnegative segment representing `|a-b|`, and `diagonalSine.value`
+is the sine ratio of the original angle, realized by perpendicular altitudes.  The two bridge
+fields say that the derived inner diagonals have precisely that difference length and that their
+included angle has precisely that sine.  They are geometric construction certificates, not a
+precomputed area formula.
 -/
 
-namespace Soultions.Sharygin.Page15.Problem29.Solution
+namespace Soultions.Sharygin.Page15.Problem29
 
-open Euclid
-open Soultions.Sharygin.Page15.Problem29.Scalar
-open Soultions.Sharygin.Page15.Problem29.Coordinates
+open Euclid Plane
+open Soultions.Sharygin.Page15.Problem29.Tarski
+open Soultions.Sharygin.Page15.Problem29.Midpoint
+open Soultions.Sharygin.Page15.Problem29.Affine
+open Soultions.Sharygin.Page15.Problem29.Area
+open Soultions.Sharygin.Page15.Problem29.Synthetic
+open Soultions.Sharygin.Page15.Problem29.DiagonalArea
 
-variable (S : OrderedScalar) [S.Axioms]
+/--
+All metric data needed to express the source's `|a-b|` and `sin(alpha)` without coordinates.
 
-private theorem sub_add_right (x y : S.Carrier) :
-    S.add (S.sub x y) y = x := by
-  change S.add (S.add x (S.neg y)) y = x
-  rw [OrderedScalar.Axioms.add_assoc,
-    neg_add S, OrderedScalar.Axioms.add_zero]
+The two diagonal-length equalities are the ruler-and-compass subtraction step in the usual
+synthetic proof.  `diagonalSine` consists of actual altitude constructions and identifies the
+vertical angle between the inner diagonals with the original angle.
+-/
+structure MetricConfiguration
+    (G : Plane)
+    (M : AngleMeasurement G)
+    (L : LengthMeasurement G)
+    (sense : RotationSense) where
+  incidence : Synthetic.Configuration G M sense
+  diagonalDifference : G.Point
+  /-- `A-diagonalDifference` is the remainder after laying the shorter side on the longer. -/
+  sideDifference :
+    (G.Bet incidence.outer.a diagonalDifference incidence.outer.b ∧
+      G.Congruent diagonalDifference incidence.outer.b
+        incidence.outer.a incidence.outer.d) ∨
+    (G.Bet incidence.outer.a diagonalDifference incidence.outer.d ∧
+      G.Congruent diagonalDifference incidence.outer.d
+        incidence.outer.a incidence.outer.b)
+  /-- The two synthetic reflection constructions identify both inner diagonals with that remainder. -/
+  innerDiagonalPR :
+    G.Congruent incidence.p incidence.r incidence.outer.a diagonalDifference
+  innerDiagonalQS :
+    G.Congruent incidence.q incidence.s incidence.outer.a diagonalDifference
+  altitudeQ : AltitudePair G incidence.p incidence.r incidence.q
+  altitudeS : AltitudePair G incidence.p incidence.r incidence.s
+  /-- A right-triangle realization of the original included angle `DAB`. -/
+  sourceSine :
+    Trigonometry.RightTriangleRealization G M
+      ⟨incidence.outer.d, incidence.outer.a, incidence.outer.b, sense⟩
+  sourceSine_angleVertex : sourceSine.angleVertex = incidence.outer.center
+  sourceSine_rightVertex : sourceSine.rightVertex = altitudeQ.foot
+  sourceSine_hypotenusePoint : sourceSine.hypotenusePoint = incidence.q
+  /-- The half-turn sends the first altitude foot to the second. -/
+  altitudeFeetReflect :
+    PointReflection G incidence.outer.center altitudeQ.foot altitudeS.foot
 
-private theorem half_sub_half (x : S.Carrier) :
-    S.sub (half S x) (half S x) = S.zero := by
-  exact OrderedScalar.Axioms.add_neg _
+def MetricConfiguration.sineValue
+    (G : Plane)
+    (M : AngleMeasurement G)
+    (L : LengthMeasurement G)
+    {sense : RotationSense}
+    (config : MetricConfiguration G M L sense) : L.scalar.Carrier :=
+  Trigonometry.sin G L config.sourceSine
 
-private theorem sub_half_half (x : S.Carrier) :
-    S.sub (S.sub x (half S x)) (half S x) = S.zero := by
-  change
-    S.add (S.add x (S.neg (half S x))) (S.neg (half S x)) = S.zero
-  rw [OrderedScalar.Axioms.add_assoc, ← neg_sum,
-    half_add_half S x, OrderedScalar.Axioms.add_neg]
+private theorem mul_inv_cancel_right
+    (S : OrderedScalar) [S.Axioms]
+    {x y : S.Carrier} (hy : y ≠ S.zero) :
+    S.mul y (S.mul x (S.inv y)) = x := by
+  calc
+    S.mul y (S.mul x (S.inv y)) =
+        S.mul x (S.mul y (S.inv y)) := by
+      simp only [OrderedScalar.Axioms.mul_assoc,
+        OrderedScalar.Axioms.mul_comm,
+        Soultions.Sharygin.Page15.Problem29.Scalar.mul_left_comm S]
+    _ = S.mul x S.one := by rw [OrderedScalar.Axioms.mul_inv y hy]
+    _ = x := OrderedScalar.Axioms.mul_one x
 
-private theorem sub_sub_half (x y : S.Carrier) :
-    S.sub (S.sub x (half S y)) (half S y) = S.sub x y := by
-  change
-    S.add (S.add x (S.neg (half S y))) (S.neg (half S y)) =
-      S.add x (S.neg y)
-  rw [OrderedScalar.Axioms.add_assoc, ← neg_sum,
-    half_add_half S y]
+def MetricConfiguration.diagonalSine
+    (G : Plane) [G.Axioms]
+    (M : AngleMeasurement G) [M.Axioms]
+    (L : LengthMeasurement G) [L.Axioms]
+    {sense : RotationSense}
+    (config : MetricConfiguration G M L sense) :
+    DiagonalSine G L (o := config.incidence.outer.center)
+      config.altitudeQ config.altitudeS := by
+  letI : OrderedScalar.Axioms L.scalar :=
+    LengthMeasurement.Axioms.scalar_axioms
+  have hOQ :
+      L.length config.incidence.outer.center config.incidence.q ≠
+        L.scalar.zero := by
+    intro hzero
+    have heq := (LengthMeasurement.Axioms.length_eq_zero
+      config.incidence.outer.center config.incidence.q).mp hzero
+    exact config.sourceSine.angleVertex_ne_hypotenusePoint
+      (config.sourceSine_angleVertex.trans
+        (heq.trans config.sourceSine_hypotenusePoint.symm))
+  have hb :
+      L.length config.altitudeQ.foot config.incidence.q =
+        L.scalar.mul
+          (L.length config.incidence.outer.center config.incidence.q)
+          (config.sineValue G M L) := by
+    unfold MetricConfiguration.sineValue Trigonometry.sin
+    rw [config.sourceSine_angleVertex,
+      config.sourceSine_rightVertex,
+      config.sourceSine_hypotenusePoint]
+    exact (mul_inv_cancel_right L.scalar hOQ).symm
+  refine {
+    value := config.sineValue G M L
+    b_height := hb
+    d_height := ?_
+  }
+  have hheight :
+        L.length config.altitudeS.foot config.incidence.s =
+          L.length config.altitudeQ.foot config.incidence.q := by
+      rw [← LengthMeasurement.Axioms.congruent_iff]
+      exact congruent_symm G
+        (pointReflection_cross_congruent G
+          config.altitudeFeetReflect
+          config.incidence.inner_q_reflects_to_s)
+  have hradius :
+        L.length config.incidence.outer.center config.incidence.s =
+          L.length config.incidence.outer.center config.incidence.q := by
+      rw [← LengthMeasurement.Axioms.congruent_iff]
+      exact config.incidence.inner_q_reflects_to_s.radius
+  rw [hheight, hradius]
+  exact hb
 
-private theorem half_sub_sub (x y : S.Carrier) :
-    S.sub (half S x) (S.sub y (half S x)) = S.sub x y := by
-  change
-    S.add (half S x) (S.neg (S.add y (S.neg (half S x)))) =
-      S.add x (S.neg y)
-  rw [neg_sum S, neg_neg S,
-    OrderedScalar.Axioms.add_comm (S.neg y) (half S x),
-    ← OrderedScalar.Axioms.add_assoc,
-    half_add_half S x]
+def MetricConfiguration.diagonalAreaConfiguration
+    (G : Plane) [G.Axioms]
+    (M : AngleMeasurement G) [M.Axioms]
+    (L : LengthMeasurement G) [L.Axioms]
+    {sense : RotationSense}
+    (config : MetricConfiguration G M L sense) :
+    DiagonalArea.Configuration G L := {
+  a := config.incidence.p
+  b := config.incidence.q
+  c := config.incidence.r
+  d := config.incidence.s
+  o := config.incidence.outer.center
+  ac_crosses := config.incidence.inner_p_reflects_to_r.between
+  bd_crosses := config.incidence.inner_q_reflects_to_s.between
+  acb_nondegenerate := by
+    intro h
+    exact config.incidence.p_q_r_nondegenerate G M
+      (collinear_swap_last G h)
+  acd_nondegenerate := by
+    intro hprs
+    have hrpq : G.Collinear config.incidence.r config.incidence.p config.incidence.q :=
+      pointReflection_preserves_collinear G
+        config.incidence.inner_p_reflects_to_r
+        (pointReflection_symm G config.incidence.inner_p_reflects_to_r)
+        (pointReflection_symm G config.incidence.inner_q_reflects_to_s)
+        hprs
+    exact config.incidence.p_q_r_nondegenerate G M
+      (collinear_cyclic G hrpq)
+  altitudeB := config.altitudeQ
+  altitudeD := config.altitudeS
+  diagonalSine := config.diagonalSine G M L
+}
 
-private theorem incidence (data : Data S) :
-    OnABisector S data.p ∧
-      OnBBisector S data.a data.p ∧
-      OnBBisector S data.a data.q ∧
-      OnCBisector S data.a data.b data.q ∧
-      OnCBisector S data.a data.b data.r ∧
-      OnDBisector S data.b data.r ∧
-      OnDBisector S data.b data.s ∧
-      OnABisector S data.s := by
-  refine ⟨rfl, half_add_half S data.a, ?_, ?_, ?_, ?_,
-    half_add_half S data.b, rfl⟩
-  · exact sub_add_right S data.a (half S data.b)
-  · exact sub_sub_half S data.a data.b
-  · exact half_sub_sub S data.a data.b
-  · change
-      S.add (half S data.a) (S.sub data.b (half S data.a)) = data.b
-    rw [OrderedScalar.Axioms.add_comm]
-    exact sub_add_right S data.b (half S data.a)
+def quadrilateralArea
+    (G : Plane) [G.Axioms]
+    (M : AngleMeasurement G) [M.Axioms]
+    (L : LengthMeasurement G) [L.Axioms]
+    (A : AreaMeasurement G L)
+    {sense : RotationSense}
+    (config : MetricConfiguration G M L sense) : L.scalar.Carrier :=
+  DiagonalArea.quadrilateralArea G L A
+    (config.diagonalAreaConfiguration G M L)
 
-private theorem first_diagonal (data : Data S) :
-    subPoint S data.q data.s =
-      (S.sub data.a data.b, S.zero) := by
-  apply Prod.ext
-  · exact sub_sub_half S data.a data.b
-  · exact half_sub_half S data.b
+def Statement
+    (G : Plane)
+    (M : AngleMeasurement G)
+    (L : LengthMeasurement G)
+    (A : AreaMeasurement G L)
+    [G.Axioms] [M.Axioms] [L.Axioms] : Prop :=
+  ∀ (sense : RotationSense)
+      (config : MetricConfiguration G M L sense),
+    G.Rectangle M
+        config.incidence.p config.incidence.q
+        config.incidence.r config.incidence.s ∧
+      L.scalar.add
+          (quadrilateralArea G M L A config)
+          (quadrilateralArea G M L A config) =
+        L.scalar.mul
+          (L.scalar.square
+            (L.length
+              config.incidence.outer.a
+              config.diagonalDifference))
+          (config.sineValue G M L)
 
-private theorem second_diagonal (data : Data S) :
-    subPoint S data.p data.r =
-      (S.zero, S.sub data.a data.b) := by
-  apply Prod.ext
-  · exact half_sub_half S data.a
-  · exact half_sub_sub S data.a data.b
+/-- Problem 29: the bisectors bound a rectangle of area `|a-b|² sin(alpha) / 2`. -/
+theorem problem29
+    (G : Plane)
+    (M : AngleMeasurement G)
+    (L : LengthMeasurement G)
+    (A : AreaMeasurement G L)
+    [G.Axioms] [M.Axioms] [L.Axioms]
+    [AreaMeasurement.Axioms (G := G) A M] :
+    Statement G M L A := by
+  intro sense config
+  refine ⟨config.incidence.inner_rectangle G M, ?_⟩
+  have harea := DiagonalArea.quadrilateral_double_area
+    G M L A (config.diagonalAreaConfiguration G M L) sense
+  simp only [MetricConfiguration.diagonalAreaConfiguration] at harea
+  have hpr :
+      L.length config.incidence.p config.incidence.r =
+        L.length config.incidence.outer.a config.diagonalDifference :=
+    (LengthMeasurement.Axioms.congruent_iff _ _ _ _).mp config.innerDiagonalPR
+  have hqs :
+      L.length config.incidence.q config.incidence.s =
+        L.length config.incidence.outer.a config.diagonalDifference :=
+    (LengthMeasurement.Axioms.congruent_iff _ _ _ _).mp config.innerDiagonalQS
+  rw [hpr, hqs] at harea
+  exact harea
 
-/-- The four incidences and the requested doubled-area formula. -/
-theorem problem29 (data : Data S) :
-    (OnABisector S data.p ∧ OnBBisector S data.a data.p) ∧
-      (OnBBisector S data.a data.q ∧
-        OnCBisector S data.a data.b data.q) ∧
-      (OnCBisector S data.a data.b data.r ∧
-        OnDBisector S data.b data.r) ∧
-      (OnDBisector S data.b data.s ∧ OnABisector S data.s) ∧
-      quadrilateralDoubleArea S data =
-        S.mul (S.square (S.sub data.a data.b)) data.sinAlpha := by
-  obtain ⟨hpA, hpB, hqB, hqC, hrC, hrD, hsD, hsA⟩ := incidence S data
-  refine ⟨⟨hpA, hpB⟩, ⟨hqB, hqC⟩, ⟨hrC, hrD⟩,
-    ⟨hsD, hsA⟩, ?_⟩
-  simp only [quadrilateralDoubleArea]
-  rw [first_diagonal S data, second_diagonal S data]
-  change
-    S.mul
-        (S.sub
-          (S.mul (S.sub data.a data.b) (S.sub data.a data.b))
-          (S.mul S.zero S.zero))
-        data.sinAlpha =
-      S.mul
-        (S.mul (S.sub data.a data.b) (S.sub data.a data.b))
-        data.sinAlpha
-  rw [OrderedScalar.Axioms.zero_mul]
-  change
-    S.mul
-        (S.add
-          (S.mul (S.sub data.a data.b) (S.sub data.a data.b))
-          (S.neg S.zero))
-        data.sinAlpha = _
-  rw [neg_zero S, OrderedScalar.Axioms.add_zero]
-
-end Soultions.Sharygin.Page15.Problem29.Solution
+end Soultions.Sharygin.Page15.Problem29
