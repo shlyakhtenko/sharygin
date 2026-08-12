@@ -165,6 +165,44 @@ theorem not_two_diameter_side_lines
       (collinear_cyclic G
         (collinear_refl_left G triangle.c circle.center)))
 
+/--
+Fix the midpoint of `A'A` and apply to `B` the same two half-turns which send the
+circumcenter `O` first to `A'` and then to `A`.  The resulting point has from `A` exactly
+the distance which `B'` has from `A`.  This is the first metric half of the point-uniqueness
+argument used to identify the result with `B'`.
+-/
+theorem translated_second_vertex_candidate
+    {circle : Circle G}
+    (triangle : CircumscribedTriangle G circle)
+    (construction : SideReflectionConstruction G triangle)
+    {n : G.Point}
+    (hreflectedA_n_a : G.Midpoint construction.reflectedA n triangle.a) :
+    ∃ x,
+      PointReflection G n triangle.b x ∧
+      G.Congruent triangle.a x triangle.a construction.reflectedB := by
+  obtain ⟨x, hbx⟩ := pointReflection_exists G n triangle.b
+  have hcenterToA : PointReflection G n construction.reflectedA triangle.a :=
+    midpoint_as_pointReflection G hreflectedA_n_a
+  have hcToB : PointReflection G construction.midpointA triangle.c triangle.b :=
+    pointReflection_symm G
+      (midpoint_as_pointReflection G construction.midpointA_isMidpoint)
+  have hcenterC_ax :
+      G.Congruent circle.center triangle.c triangle.a x :=
+    two_pointReflections_cross_congruent G
+      construction.center_reflectedA hcenterToA hcToB hbx
+  have hcToA : PointReflection G construction.midpointB triangle.c triangle.a :=
+    midpoint_as_pointReflection G construction.midpointB_isMidpoint
+  have hcenterC_reflectedB_a :
+      G.Congruent circle.center triangle.c construction.reflectedB triangle.a :=
+    pointReflection_cross_congruent G construction.center_reflectedB hcToA
+  have hax_reflectedB_a :
+      G.Congruent triangle.a x construction.reflectedB triangle.a :=
+    congruent_trans G (congruent_symm G hcenterC_ax)
+      hcenterC_reflectedB_a
+  exact ⟨x, hbx,
+    congruent_trans G hax_reflectedB_a
+      (Plane.Axioms.congruenceReversal construction.reflectedB triangle.a)⟩
+
 /-- The exact geometric output required by both parts of problem 20. -/
 structure SolutionData
     (L : LengthMeasurement G)

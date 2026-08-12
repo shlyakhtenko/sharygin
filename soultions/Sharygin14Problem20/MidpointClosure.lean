@@ -27,6 +27,22 @@ theorem midpoint_symm
       (midpoint_as_pointReflection G h))
 
 /--
+Two successive half-turns preserve the distance between any two points.  This is the
+problem-local metric form of the translation used in the orthocenter construction; it is
+obtained by applying the already-derived isometry theorem once at each center.
+ -/
+theorem two_pointReflections_cross_congruent
+    {firstCenter secondCenter p pFirst pSecond q qFirst qSecond : G.Point}
+    (hpFirst : PointReflection G firstCenter p pFirst)
+    (hpSecond : PointReflection G secondCenter pFirst pSecond)
+    (hqFirst : PointReflection G firstCenter q qFirst)
+    (hqSecond : PointReflection G secondCenter qFirst qSecond) :
+    G.Congruent p q pSecond qSecond := by
+  exact congruent_trans G
+    (pointReflection_cross_congruent G hpFirst hqFirst)
+    (pointReflection_cross_congruent G hpSecond hqSecond)
+
+/--
 The full midpoint-grid closure: the alignment theorem supplies betweenness, while the two
 half-turns supply equality of the two resulting halves.
 -/

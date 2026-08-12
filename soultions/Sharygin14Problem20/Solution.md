@@ -54,3 +54,9 @@ then it is the chord's midpoint.  This follows from equality of radii and unique
 midpoint, rather than from an added hypothesis.  The remaining lemma is the complete affine
 closure producing one common midpoint for the three reflected pairs, with the ordinary and
 diameter cases combined.
+
+The current affine reduction now composes the two half-turns which take `O` first to `A'`
+and then to `A`. Applying that composition to `C` gives a candidate for `B'`, and the formal
+proof establishes the first required identifying distance from `A`. What remains is the
+problem-local point-uniqueness step (including its collinear case), followed cyclically for
+`C'`; until those steps are proved, the final theorem remains conditional as stated above.
