@@ -61,6 +61,9 @@ proof establishes the first required identifying distance from `A`. It also prov
 common-midpoint conclusion in the ordinary affine case: the two side-reflection
 parallelograms give two pairs of opposite parallel lines, whose diagonals have a common
 midpoint. The conditions saying that the relevant radius lines are nondegenerate are now
-derived from the assertion that the corresponding chords are not diameters. What remains is
-to discharge the exceptional collinear cases (including a diameter side), followed cyclically
-for `C'`; until those cases are proved, the final theorem remains conditional as stated above.
+derived from the assertion that the corresponding chords are not diameters. The diameter
+branches are also formalized: a diameter's midpoint is `O`, its reflected center therefore
+equals `O`, and an inverse form of the midpoint-grid identity proves the second required
+midpoint relation. What remains is to discharge the residual collinearity exceptions in the
+no-diameter affine case, followed cyclically for `C'`; until those cases are proved, the final
+theorem remains conditional as stated above.

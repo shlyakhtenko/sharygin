@@ -69,6 +69,39 @@ theorem midpoint_grid_closure
   exact ⟨hbetween, hya_ax⟩
 
 /--
+Solve the same midpoint grid for its second reflected edge.  Construct that edge, apply
+`midpoint_grid_closure`, and use uniqueness of the already given closing midpoint to identify
+the constructed endpoint.  This inverse form is what the diameter case of problem 20 needs.
+-/
+theorem midpoint_grid_solve_second
+    {a b c m n x y : G.Point}
+    (habc : ¬G.Collinear a b c)
+    (hmab : G.Midpoint a m b)
+    (hnac : G.Midpoint a n c)
+    (hnby : G.Midpoint b n y)
+    (hyax : G.Midpoint y a x) :
+    G.Midpoint c m x := by
+  obtain ⟨x', hcx'⟩ := pointReflection_exists G m c
+  have hyaX' : G.Midpoint y a x' :=
+    midpoint_grid_closure G habc hmab
+      (pointReflection_as_midpoint G hcx') hnac hnby
+  have hx' : x' = x := by
+    by_cases hya : y = a
+    · subst y
+      have hx'A : x' = a := by
+        exact (Plane.Axioms.congruenceIdentity a x' a
+          (congruent_symm G hyaX'.2)).symm
+      have hxA : x = a := by
+        exact (Plane.Axioms.congruenceIdentity a x a
+          (congruent_symm G hyax.2)).symm
+      exact hx'A.trans hxA.symm
+    · exact pointReflection_unique G hya
+        (midpoint_as_pointReflection G hyaX')
+        (midpoint_as_pointReflection G hyax)
+  subst x'
+  exact pointReflection_as_midpoint G hcx'
+
+/--
 The segment joining two side midpoints and the opposite vertex-to-midpoint segment bisect
 one another.
 -/

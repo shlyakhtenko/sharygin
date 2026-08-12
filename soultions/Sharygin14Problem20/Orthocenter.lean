@@ -304,6 +304,184 @@ theorem first_two_reflected_pairs_common_midpoint_of_no_adjacent_diameters
     hreflectedA_b_reflectedB hcenter_reflectedA_reflectedB
     hreflectedA_reflectedB_a
 
+/--
+If `BC` is a diameter, then `A' = O`.  Taking `N` as the midpoint of `OA`, the inverse
+midpoint-grid identity applied to `B-O-C`, `O-Mᵇ-B'`, and `A-Mᵇ-C` proves that the same
+`N` is the midpoint of `B'B`.
+-/
+theorem first_two_reflected_pairs_common_midpoint_of_first_diameter
+    {circle : Circle G}
+    (triangle : CircumscribedTriangle G circle)
+    (construction : SideReflectionConstruction G triangle)
+    (hbcDiameter : G.Collinear triangle.b triangle.c circle.center) :
+    ∃ n,
+      G.Midpoint construction.reflectedA n triangle.a ∧
+      G.Midpoint construction.reflectedB n triangle.b := by
+  have hbc : triangle.b ≠ triangle.c := by
+    intro h
+    apply triangle.noncollinear
+    rw [h]
+    exact collinear_refl_right G triangle.a triangle.c
+  have hca : triangle.c ≠ triangle.a := by
+    intro h
+    apply triangle.noncollinear
+    rw [h]
+    exact collinear_cyclic G (collinear_refl_left G triangle.a triangle.b)
+  have hcaNotDiameter :
+      ¬G.Collinear triangle.c triangle.a circle.center := by
+    intro hcaDiameter
+    exact not_two_diameter_side_lines G triangle ⟨hbcDiameter, hcaDiameter⟩
+  have hcenterEqMidpointA : circle.center = construction.midpointA :=
+    circumcenter_eq_chord_midpoint G triangle.b_onCircle triangle.c_onCircle
+      hbc construction.midpointA_isMidpoint hbcDiameter
+  have hreflectedAEqCenter : construction.reflectedA = circle.center :=
+    reflected_center_eq_center_of_chord_line G
+      triangle.b_onCircle triangle.c_onCircle hbc
+      construction.midpointA_isMidpoint construction.center_reflectedA hbcDiameter
+  have hcenterMidpointBC :
+      G.Midpoint triangle.b circle.center triangle.c := by
+    simpa [hcenterEqMidpointA] using construction.midpointA_isMidpoint
+  have hcenterNeA : circle.center ≠ triangle.a :=
+    center_ne_onCircle G triangle.a_onCircle
+  have hreflectedBNeCenter : construction.reflectedB ≠ circle.center := by
+    intro h
+    have hcenterEqMidpointB : circle.center = construction.midpointB := by
+      have hfixed : circle.center = construction.midpointB :=
+        pointReflection_fixed G (by
+          simpa [h] using construction.center_reflectedB)
+      exact hfixed
+    have hcaCenter : G.Collinear triangle.c triangle.a circle.center := by
+      simpa [hcenterEqMidpointB] using
+        midpoint_collinear G construction.midpointB_isMidpoint
+    exact hcaNotDiameter hcaCenter
+  have hcenterAReflectedB :
+      ¬G.Collinear circle.center triangle.a construction.reflectedB := by
+    intro hcollinear
+    have hcenterReflectedBMidpointB :
+        G.Collinear circle.center construction.reflectedB construction.midpointB :=
+      collinear_swap_last G (Or.inl construction.center_reflectedB.between)
+    have hlineCenterReflectedB_A :
+        G.Collinear circle.center construction.reflectedB triangle.a :=
+      collinear_swap_last G hcollinear
+    have hlineCenterReflectedB_MidpointB :
+        G.Collinear circle.center construction.reflectedB construction.midpointB :=
+      hcenterReflectedBMidpointB
+    have hcenterAMidpointB :
+        G.Collinear circle.center triangle.a construction.midpointB :=
+      collinear_three_on_line G hreflectedBNeCenter.symm
+        (collinear_cyclic G
+          (collinear_refl_left G circle.center construction.reflectedB))
+        hlineCenterReflectedB_A hlineCenterReflectedB_MidpointB
+    have haMidpointB : triangle.a ≠ construction.midpointB :=
+      midpoint_right_ne G construction.midpointB_isMidpoint hca
+    have haMidpointB_C :
+        G.Collinear triangle.a construction.midpointB triangle.c :=
+      collinear_cyclic G (midpoint_collinear G construction.midpointB_isMidpoint)
+    have haMidpointB_Center :
+        G.Collinear triangle.a construction.midpointB circle.center :=
+      collinear_cyclic G hcenterAMidpointB
+    exact hcaNotDiameter
+      (collinear_three_on_line G haMidpointB
+        haMidpointB_C
+        (collinear_cyclic G
+          (collinear_refl_left G triangle.a construction.midpointB))
+        haMidpointB_Center)
+  obtain ⟨n, hn⟩ := midpoint_exists G circle.center triangle.a
+  have hreflectedA_n_a :
+      G.Midpoint construction.reflectedA n triangle.a := by
+    simpa [hreflectedAEqCenter] using hn
+  have hreflectedB_n_b :
+      G.Midpoint construction.reflectedB n triangle.b :=
+    midpoint_grid_solve_second G hcenterAReflectedB hn
+      (pointReflection_as_midpoint G construction.center_reflectedB)
+      (midpoint_symm G construction.midpointB_isMidpoint)
+      (midpoint_symm G hcenterMidpointBC)
+  exact ⟨n, hreflectedA_n_a, hreflectedB_n_b⟩
+
+/-- The symmetric diameter branch: if `CA` is a diameter, then `B' = O`, and the inverse
+midpoint grid shows that the midpoint of `OB` also bisects `A'A`. -/
+theorem first_two_reflected_pairs_common_midpoint_of_second_diameter
+    {circle : Circle G}
+    (triangle : CircumscribedTriangle G circle)
+    (construction : SideReflectionConstruction G triangle)
+    (hcaDiameter : G.Collinear triangle.c triangle.a circle.center) :
+    ∃ n,
+      G.Midpoint construction.reflectedA n triangle.a ∧
+      G.Midpoint construction.reflectedB n triangle.b := by
+  have hca : triangle.c ≠ triangle.a := by
+    intro h
+    apply triangle.noncollinear
+    rw [h]
+    exact collinear_cyclic G (collinear_refl_left G triangle.a triangle.b)
+  have hbc : triangle.b ≠ triangle.c := by
+    intro h
+    apply triangle.noncollinear
+    rw [h]
+    exact collinear_refl_right G triangle.a triangle.c
+  have hbcNotDiameter :
+      ¬G.Collinear triangle.b triangle.c circle.center := by
+    intro hbcDiameter
+    exact not_two_diameter_side_lines G triangle ⟨hbcDiameter, hcaDiameter⟩
+  have hcenterEqMidpointB : circle.center = construction.midpointB :=
+    circumcenter_eq_chord_midpoint G triangle.c_onCircle triangle.a_onCircle
+      hca construction.midpointB_isMidpoint hcaDiameter
+  have hreflectedBEqCenter : construction.reflectedB = circle.center :=
+    reflected_center_eq_center_of_chord_line G
+      triangle.c_onCircle triangle.a_onCircle hca
+      construction.midpointB_isMidpoint construction.center_reflectedB hcaDiameter
+  have hcenterMidpointCA :
+      G.Midpoint triangle.c circle.center triangle.a := by
+    simpa [hcenterEqMidpointB] using construction.midpointB_isMidpoint
+  have hreflectedANeCenter : construction.reflectedA ≠ circle.center := by
+    intro h
+    have hcenterEqMidpointA : circle.center = construction.midpointA := by
+      exact pointReflection_fixed G (by
+        simpa [h] using construction.center_reflectedA)
+    have hbcCenter : G.Collinear triangle.b triangle.c circle.center := by
+      simpa [hcenterEqMidpointA] using
+        midpoint_collinear G construction.midpointA_isMidpoint
+    exact hbcNotDiameter hbcCenter
+  have hcenterBReflectedA :
+      ¬G.Collinear circle.center triangle.b construction.reflectedA := by
+    intro hcollinear
+    have hcenterReflectedAMidpointA :
+        G.Collinear circle.center construction.reflectedA construction.midpointA :=
+      collinear_swap_last G (Or.inl construction.center_reflectedA.between)
+    have hlineCenterReflectedA_B :
+        G.Collinear circle.center construction.reflectedA triangle.b :=
+      collinear_swap_last G hcollinear
+    have hcenterBMidpointA :
+        G.Collinear circle.center triangle.b construction.midpointA :=
+      collinear_three_on_line G hreflectedANeCenter.symm
+        (collinear_cyclic G
+          (collinear_refl_left G circle.center construction.reflectedA))
+        hlineCenterReflectedA_B hcenterReflectedAMidpointA
+    have hbMidpointA : triangle.b ≠ construction.midpointA :=
+      midpoint_left_ne G construction.midpointA_isMidpoint hbc
+    have hbMidpointA_C :
+        G.Collinear triangle.b construction.midpointA triangle.c :=
+      collinear_swap_last G
+        (midpoint_collinear G construction.midpointA_isMidpoint)
+    have hbMidpointA_Center :
+        G.Collinear triangle.b construction.midpointA circle.center :=
+      collinear_cyclic G hcenterBMidpointA
+    exact hbcNotDiameter
+      (collinear_three_on_line G hbMidpointA
+        (collinear_cyclic G
+          (collinear_refl_left G triangle.b construction.midpointA))
+        hbMidpointA_C hbMidpointA_Center)
+  obtain ⟨n, hn⟩ := midpoint_exists G circle.center triangle.b
+  have hreflectedB_n_b :
+      G.Midpoint construction.reflectedB n triangle.b := by
+    simpa [hreflectedBEqCenter] using hn
+  have hreflectedA_n_a :
+      G.Midpoint construction.reflectedA n triangle.a :=
+    midpoint_grid_solve_second G hcenterBReflectedA hn
+      (pointReflection_as_midpoint G construction.center_reflectedA)
+      construction.midpointA_isMidpoint
+      hcenterMidpointCA
+  exact ⟨n, hreflectedA_n_a, hreflectedB_n_b⟩
+
 /-- The exact geometric output required by both parts of problem 20. -/
 structure SolutionData
     (L : LengthMeasurement G)
