@@ -44,6 +44,10 @@ structure InternalBisector
     (M : AngleMeasurement G)
     (sense : RotationSense)
     (vertex left right first second : G.Point) where
+  /-- Direct symmetric-ray data witnessing that this is the geometric angle-bisector ray. -/
+  witness :
+    Soultions.Sharygin.Page15.Problem29.Bisector.Witness
+      G vertex left right first
   second_on_ray : G.SameRay vertex first second
   sides_opposite : G.OppositeSides vertex first left right
   inside :
@@ -468,6 +472,22 @@ def InternalBisector.swapRayPoints
         rw [h]
         exact collinear_cyclic G (collinear_refl_left G vertex first))
   refine {
+    witness := {
+      leftSample := bisector.witness.leftSample
+      rightSample := bisector.witness.rightSample
+      bisectorSample := bisector.witness.bisectorSample
+      left_on_ray := bisector.witness.left_on_ray
+      right_on_ray := bisector.witness.right_on_ray
+      bisector_on_ray :=
+        sameRay_trans G
+          (sameRay_symm G bisector.second_on_ray)
+          bisector.witness.bisector_on_ray
+      radial_samples_equal := bisector.witness.radial_samples_equal
+      bisector_sample_equidistant :=
+        bisector.witness.bisector_sample_equidistant
+      all_equal_radial_samples_symmetric :=
+        bisector.witness.all_equal_radial_samples_symmetric
+    }
     second_on_ray := sameRay_symm G bisector.second_on_ray
     sides_opposite :=
       (oppositeSides_on_same_line_iff G

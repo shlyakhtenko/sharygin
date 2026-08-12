@@ -1,21 +1,22 @@
 import Euclid
 import Sharygin15Problem29.Synthetic
 import Sharygin15Problem29.DiagonalArea
+import Sharygin15Problem29.MetricGeometry
+import Sharygin15Problem29.MetricSine
 
 /-!
 # Sharygin, PDF page 15, problem 29
 
 The formal theorem is entirely synthetic.  It proves that the four actual internal-bisector
-intersections form a rectangle and computes its area from its actual crossing diagonals.  The
-answer is stated in the geometrically exact form
+intersections form a rectangle, derives both inner-diagonal lengths by segment constructions,
+derives their directions from those same constructions, and identifies their sine with the
+source angle through right-triangle altitude constructions.  The answer is stated in the
+geometrically exact form
 
 `2 area = |a - b|² sin(alpha)`:
 
-`diagonalDifference` is the nonnegative segment representing `|a-b|`, and `diagonalSine.value`
-is the sine ratio of the original angle, realized by perpendicular altitudes.  The two bridge
-fields say that the derived inner diagonals have precisely that difference length and that their
-included angle has precisely that sine.  They are geometric construction certificates, not a
-precomputed area formula.
+`diagonalDifference` is the constructed nonnegative segment representing `|a-b|`, and
+`sineValue` is the construction-independent right-triangle sine of the original angle.
 -/
 
 namespace Soultions.Sharygin.Page15.Problem29
@@ -27,6 +28,10 @@ open Soultions.Sharygin.Page15.Problem29.Affine
 open Soultions.Sharygin.Page15.Problem29.Area
 open Soultions.Sharygin.Page15.Problem29.Synthetic
 open Soultions.Sharygin.Page15.Problem29.DiagonalArea
+open Soultions.Sharygin.Page15.Problem29.MetricGeometry
+open Soultions.Sharygin.Page15.Problem29.MetricSine
+open Soultions.Sharygin.Page15.Problem29.Sine
+open Soultions.Sharygin.Page15.Problem29.SineCompatibility
 
 /--
 All metric data needed to express the source's `|a-b|` and `sin(alpha)` without coordinates.
@@ -39,42 +44,27 @@ structure MetricConfiguration
     (G : Plane)
     (M : AngleMeasurement G)
     (L : LengthMeasurement G)
+    [G.Axioms] [M.Axioms]
     (sense : RotationSense) where
   incidence : Synthetic.Configuration G M sense
   diagonalDifference : G.Point
-  /-- `A-diagonalDifference` is the remainder after laying the shorter side on the longer. -/
-  sideDifference :
-    (G.Bet incidence.outer.a diagonalDifference incidence.outer.b ∧
-      G.Congruent diagonalDifference incidence.outer.b
-        incidence.outer.a incidence.outer.d) ∨
-    (G.Bet incidence.outer.a diagonalDifference incidence.outer.d ∧
-      G.Congruent diagonalDifference incidence.outer.d
-        incidence.outer.a incidence.outer.b)
-  /-- The two synthetic reflection constructions identify both inner diagonals with that remainder. -/
-  innerDiagonalPR :
-    G.Congruent incidence.p incidence.r incidence.outer.a diagonalDifference
-  innerDiagonalQS :
-    G.Congruent incidence.q incidence.s incidence.outer.a diagonalDifference
+  /-- Actual layoff, translation, and extension constructions for the side difference. -/
+  differenceConstructions :
+    DifferenceConstructions G M incidence diagonalDifference
   altitudeQ : AltitudePair G incidence.p incidence.r incidence.q
   altitudeS : AltitudePair G incidence.p incidence.r incidence.s
-  /-- A right-triangle realization of the original included angle `DAB`. -/
-  sourceSine :
-    Trigonometry.RightTriangleRealization G M
-      ⟨incidence.outer.d, incidence.outer.a, incidence.outer.b, sense⟩
-  sourceSine_angleVertex : sourceSine.angleVertex = incidence.outer.center
-  sourceSine_rightVertex : sourceSine.rightVertex = altitudeQ.foot
-  sourceSine_hypotenusePoint : sourceSine.hypotenusePoint = incidence.q
-  /-- The half-turn sends the first altitude foot to the second. -/
-  altitudeFeetReflect :
-    PointReflection G incidence.outer.center altitudeQ.foot altitudeS.foot
+  /-- A right-triangle construction defining the sine of the original angle. -/
+  sourceSine : Construction G M
+    ⟨incidence.outer.b, incidence.outer.a, incidence.outer.d, sense⟩
 
 def MetricConfiguration.sineValue
     (G : Plane)
     (M : AngleMeasurement G)
     (L : LengthMeasurement G)
+    [G.Axioms] [M.Axioms]
     {sense : RotationSense}
     (config : MetricConfiguration G M L sense) : L.scalar.Carrier :=
-  Trigonometry.sin G L config.sourceSine
+  realizationValue G L config.sourceSine
 
 private theorem mul_inv_cancel_right
     (S : OrderedScalar) [S.Axioms]
@@ -89,7 +79,7 @@ private theorem mul_inv_cancel_right
     _ = S.mul x S.one := by rw [OrderedScalar.Axioms.mul_inv y hy]
     _ = x := OrderedScalar.Axioms.mul_one x
 
-def MetricConfiguration.diagonalSine
+noncomputable def MetricConfiguration.diagonalSine
     (G : Plane) [G.Axioms]
     (M : AngleMeasurement G) [M.Axioms]
     (L : LengthMeasurement G) [L.Axioms]
@@ -105,41 +95,54 @@ def MetricConfiguration.diagonalSine
     intro hzero
     have heq := (LengthMeasurement.Axioms.length_eq_zero
       config.incidence.outer.center config.incidence.q).mp hzero
-    exact config.sourceSine.angleVertex_ne_hypotenusePoint
-      (config.sourceSine_angleVertex.trans
-        (heq.trans config.sourceSine_hypotenusePoint.symm))
+    apply config.incidence.p_q_r_nondegenerate G M
+    rw [← heq]
+    exact Or.inl config.incidence.inner_p_reflects_to_r.between
+  have hqExists := source_sine_from_inner_altitude G M L
+      config.incidence config.diagonalDifference
+      config.differenceConstructions config.altitudeQ
+  let qConstruction := Classical.choose hqExists
+  have hqValue := Classical.choose_spec hqExists
   have hb :
       L.length config.altitudeQ.foot config.incidence.q =
         L.scalar.mul
           (L.length config.incidence.outer.center config.incidence.q)
           (config.sineValue G M L) := by
-    unfold MetricConfiguration.sineValue Trigonometry.sin
-    rw [config.sourceSine_angleVertex,
-      config.sourceSine_rightVertex,
-      config.sourceSine_hypotenusePoint]
+    unfold MetricConfiguration.sineValue
+    rw [realizationValue_unique G M L config.sourceSine qConstruction,
+      hqValue]
     exact (mul_inv_cancel_right L.scalar hOQ).symm
   refine {
     value := config.sineValue G M L
     b_height := hb
     d_height := ?_
   }
-  have hheight :
-        L.length config.altitudeS.foot config.incidence.s =
-          L.length config.altitudeQ.foot config.incidence.q := by
-      rw [← LengthMeasurement.Axioms.congruent_iff]
-      exact congruent_symm G
-        (pointReflection_cross_congruent G
-          config.altitudeFeetReflect
-          config.incidence.inner_q_reflects_to_s)
-  have hradius :
-        L.length config.incidence.outer.center config.incidence.s =
-          L.length config.incidence.outer.center config.incidence.q := by
-      rw [← LengthMeasurement.Axioms.congruent_iff]
-      exact config.incidence.inner_q_reflects_to_s.radius
-  rw [hheight, hradius]
-  exact hb
+  have hOS :
+      L.length config.incidence.outer.center config.incidence.s ≠
+        L.scalar.zero := by
+    intro hzero
+    have heq := (LengthMeasurement.Axioms.length_eq_zero
+      config.incidence.outer.center config.incidence.s).mp hzero
+    have hqO : config.incidence.q ≠ config.incidence.outer.center := by
+      intro hqO
+      apply config.incidence.p_q_r_nondegenerate G M
+      rw [hqO]
+      exact Or.inl config.incidence.inner_p_reflects_to_r.between
+    have hsO : config.incidence.s ≠ config.incidence.outer.center :=
+      pointReflection_other_ne G
+        config.incidence.inner_q_reflects_to_s hqO
+    exact hsO heq.symm
+  have hsExists := source_sine_from_second_inner_altitude G M L
+      config.incidence config.diagonalDifference
+      config.differenceConstructions config.altitudeS
+  let sConstruction := Classical.choose hsExists
+  have hsValue := Classical.choose_spec hsExists
+  unfold MetricConfiguration.sineValue
+  rw [realizationValue_unique G M L config.sourceSine sConstruction,
+    hsValue]
+  exact (mul_inv_cancel_right L.scalar hOS).symm
 
-def MetricConfiguration.diagonalAreaConfiguration
+noncomputable def MetricConfiguration.diagonalAreaConfiguration
     (G : Plane) [G.Axioms]
     (M : AngleMeasurement G) [M.Axioms]
     (L : LengthMeasurement G) [L.Axioms]
@@ -172,7 +175,7 @@ def MetricConfiguration.diagonalAreaConfiguration
   diagonalSine := config.diagonalSine G M L
 }
 
-def quadrilateralArea
+noncomputable def quadrilateralArea
     (G : Plane) [G.Axioms]
     (M : AngleMeasurement G) [M.Axioms]
     (L : LengthMeasurement G) [L.Axioms]
@@ -217,15 +220,19 @@ theorem problem29
   have harea := DiagonalArea.quadrilateral_double_area
     G M L A (config.diagonalAreaConfiguration G M L) sense
   simp only [MetricConfiguration.diagonalAreaConfiguration] at harea
+  have hdiagonals := inner_diagonals_congruent_side_difference
+    G M config.incidence config.diagonalDifference
+      config.differenceConstructions
   have hpr :
       L.length config.incidence.p config.incidence.r =
         L.length config.incidence.outer.a config.diagonalDifference :=
-    (LengthMeasurement.Axioms.congruent_iff _ _ _ _).mp config.innerDiagonalPR
+    (LengthMeasurement.Axioms.congruent_iff _ _ _ _).mp hdiagonals.1
   have hqs :
       L.length config.incidence.q config.incidence.s =
         L.length config.incidence.outer.a config.diagonalDifference :=
-    (LengthMeasurement.Axioms.congruent_iff _ _ _ _).mp config.innerDiagonalQS
+    (LengthMeasurement.Axioms.congruent_iff _ _ _ _).mp hdiagonals.2
   rw [hpr, hqs] at harea
-  exact harea
+  simpa only [OrderedScalar.square,
+    MetricConfiguration.diagonalSine] using harea
 
 end Soultions.Sharygin.Page15.Problem29
