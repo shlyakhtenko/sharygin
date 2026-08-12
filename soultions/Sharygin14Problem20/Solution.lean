@@ -26,7 +26,7 @@ def Statement
       (triangle : CircumscribedTriangle G circle),
     Nonempty (SolutionData G L triangle)
 
-/-- The result after the currently isolated affine construction package has been produced. -/
+/-- The metric conclusion extracted from an explicitly supplied construction package. -/
 theorem problem20_of_configuration
     (G : Plane.{0})
     (M : AngleMeasurement G)
@@ -45,5 +45,16 @@ theorem problem20_of_configuration
       Nonempty (SolutionData G L triangle) := by
   intro circle config
   exact solutionData_of_configuration G M L config
+
+/-- Sharygin page 14, problem 20, with the midpoint/reflection configuration constructed
+from only the nondegenerate inscribed triangle. -/
+theorem problem20
+    (G : Plane.{0})
+    (M : AngleMeasurement G)
+    (L : LengthMeasurement G)
+    [G.Axioms] [M.Axioms] [L.Axioms] :
+    Statement G L := by
+  intro circle triangle
+  exact solutionData_exists G M L triangle
 
 end Soultions.Sharygin.Page14.Problem20

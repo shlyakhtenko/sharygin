@@ -102,6 +102,75 @@ theorem midpoint_grid_solve_second
   exact pointReflection_as_midpoint G hcx'
 
 /--
+Two points on one nondegenerate line are equal if they have equal distances from two
+distinct points of that line.  If the points were distinct, the equal-radius dichotomy at
+each fixed point would make both fixed points midpoints of the same segment.
+-/
+theorem collinear_equal_distances_to_two_centers_unique
+    {a b x y : G.Point}
+    (hab : a ≠ b)
+    (haxay : G.Congruent a x a y)
+    (hbxby : G.Congruent b x b y)
+    (hx : G.Collinear a b x)
+    (hy : G.Collinear a b y) :
+    x = y := by
+  apply Classical.byContradiction
+  intro hxy
+  have hax : a ≠ x := by
+    intro h
+    subst x
+    have hay : a = y :=
+      Plane.Axioms.congruenceIdentity a y a
+        (congruent_symm G haxay)
+    exact hxy hay
+  have hay : a ≠ y := by
+    intro h
+    subst y
+    have haxEq : a = x :=
+      Plane.Axioms.congruenceIdentity a x a haxay
+    exact hxy haxEq.symm
+  have hbx : b ≠ x := by
+    intro h
+    subst x
+    have hby : b = y :=
+      Plane.Axioms.congruenceIdentity b y b
+        (congruent_symm G hbxby)
+    exact hxy hby
+  have hby : b ≠ y := by
+    intro h
+    subst y
+    have hbxEq : b = x :=
+      Plane.Axioms.congruenceIdentity b x b hbxby
+    exact hxy hbxEq.symm
+  have hyax : G.Collinear y a x :=
+    collinear_three_on_line G hab
+      hy
+      (collinear_cyclic G (collinear_refl_left G a b))
+      hx
+  have hybx : G.Collinear y b x :=
+    collinear_three_on_line G hab
+      hy
+      (collinear_refl_right G a b)
+      hx
+  rcases between_or_eq_of_collinear_equal_radii G
+      hax hay haxay hyax with hya | hEq
+  · rcases between_or_eq_of_collinear_equal_radii G
+        hbx hby hbxby hybx with hyb | hEq
+    · have haMidpoint : G.Midpoint y a x := by
+        refine ⟨hya, ?_⟩
+        exact congruent_trans G
+          (Plane.Axioms.congruenceReversal y a)
+          (congruent_symm G haxay)
+      have hbMidpoint : G.Midpoint y b x := by
+        refine ⟨hyb, ?_⟩
+        exact congruent_trans G
+          (Plane.Axioms.congruenceReversal y b)
+          (congruent_symm G hbxby)
+      exact hab (midpoint_unique G haMidpoint hbMidpoint)
+    · exact hxy hEq
+  · exact hxy hEq
+
+/--
 The segment joining two side midpoints and the opposite vertex-to-midpoint segment bisect
 one another.
 -/
