@@ -34,7 +34,6 @@ structure Configuration (M : AngleMeasurement G) where
   reflectedC : G.Point
   sense : RotationSense
   abc_noncollinear : ¬G.Collinear a b c
-  b_reflectedC_c_noncollinear : ¬G.Collinear b reflectedC c
   midpoint_bc : G.Midpoint b midpoint c
   c_reflects_in_a : PointReflection G a c reflectedC
   b_equidistant_c_reflectedC : G.Congruent b c b reflectedC
@@ -43,8 +42,6 @@ structure Configuration (M : AngleMeasurement G) where
   large_is_twice_small :
     M.measure ⟨midpoint, a, c, sense⟩ =
       M.twice (M.measure ⟨b, a, midpoint, sense⟩)
-  small_b_orientation :
-    G.Orientation b a midpoint = G.Orientation c b a
 
 omit [G.Axioms] in
 private theorem measure_add_left_cancel
@@ -81,10 +78,25 @@ private theorem median_to_hypotenuse_midpoint_eq
   have hnoncollinear :
       ¬G.Collinear config.c config.reflectedC config.b := by
     intro h
-    exact config.b_reflectedC_c_noncollinear
-      (collinear_cyclic G
-        (collinear_swap_last G
-          (a := config.c) (b := config.reflectedC) (c := config.b) h))
+    have hca : config.c ≠ config.a := by
+      intro hca
+      apply config.abc_noncollinear
+      rw [hca]
+      exact collinear_cyclic G
+        (collinear_refl_left G config.a config.b)
+    have hcreflected : config.c ≠ config.reflectedC := by
+      intro hcreflected
+      have hreflection := config.c_reflects_in_a
+      rw [← hcreflected] at hreflection
+      exact hca (pointReflection_fixed G hreflection)
+    have hlineA : G.Collinear config.c config.reflectedC config.a :=
+      collinear_swap_last G (Or.inl config.c_reflects_in_a.between)
+    have hlineC : G.Collinear config.c config.reflectedC config.c :=
+      collinear_cyclic G
+        (collinear_refl_left G config.c config.reflectedC)
+    have habc : G.Collinear config.a config.b config.c :=
+      collinear_three_on_line G hcreflected hlineA h hlineC
+    exact config.abc_noncollinear habc
   have hcbMidpoint : G.Midpoint config.c config.midpoint config.b := by
     refine ⟨bet_symm G config.midpoint_bc.1, ?_⟩
     exact congruent_trans G
@@ -201,7 +213,17 @@ theorem problem24
       M.measure ⟨config.b, config.a, config.midpoint, config.sense⟩ =
         M.measure ⟨config.c, config.b, config.a, config.sense⟩ :=
     measure_eq_of_sameAngle_same_orientation G M config.sense
-      habm_off hsmallSameB config.small_b_orientation
+      habm_off hsmallSameB (by
+        have hsameRay : G.SameRay config.b config.midpoint config.c :=
+          sameRay_from_near_endpoint G config.midpoint_bc.1 hbm hmc
+        calc
+          G.Orientation config.b config.a config.midpoint =
+              G.Orientation config.b config.a config.c :=
+            orientation_eq_of_sameRay_from_line_point G hsameRay
+              habm_off
+          _ = G.Orientation config.c config.b config.a := by
+            rw [Plane.Axioms.orientation_cyclic config.b config.a config.c,
+              Plane.Axioms.orientation_cyclic config.a config.c config.b])
   let x := M.measure ⟨config.b, config.a, config.midpoint, config.sense⟩
   have hsameRayBC : G.SameRay config.b config.midpoint config.c :=
     sameRay_from_near_endpoint G config.midpoint_bc.1 hbm hmc
