@@ -29,11 +29,11 @@ variable (G : Plane) [G.Axioms]
 
 /--
 The right triangle, its three points of incircle contact, and the boundary point nearest the
-right-angle vertex.  The two reflection/rectangle certificates are the problem-local synthetic
-representations of the two right-angle facts used in the calculation.
+right-angle vertex.  The reflection/equidistance data represent the given right angle.  The raw
+midpoint fields record the symmetry of the contact quadrilateral; keeping the four primitive
+incidence/congruence facts here avoids assuming the stronger, partly unused `Rectangle` predicate.
 -/
 structure Configuration
-    (M : AngleMeasurement G)
     (circle : Circle G) where
   o : G.Point
   a : G.Point
@@ -53,8 +53,14 @@ structure Configuration
   tangentAB : G.TangentAt circle contactAB a
   nearest_on_circle : G.OnCircle circle nearest
   nearest_between : G.Bet o nearest circle.center
-  right_corner_rectangle :
-    G.Rectangle M o contactOA circle.center contactOB
+  cornerCenter : G.Point
+  o_cornerCenter_center_between : G.Bet o cornerCenter circle.center
+  o_cornerCenter_center_congruent :
+    G.Congruent o cornerCenter cornerCenter circle.center
+  contacts_cornerCenter_between :
+    G.Bet contactOA cornerCenter contactOB
+  contacts_cornerCenter_congruent :
+    G.Congruent contactOA cornerCenter cornerCenter contactOB
   a_reflects_in_o : PointReflection G o a reflectedA
   b_equidistant_from_a_reflection :
     G.Congruent b a b reflectedA
@@ -80,7 +86,7 @@ theorem problem23
     (M : AngleMeasurement G) [M.Axioms]
     (L : LengthMeasurement G) [L.Axioms]
     (circle : Circle G)
-    (config : Configuration G M circle) :
+    (config : Configuration G circle) :
     L.scalar.square
         (L.scalar.add
           (L.length config.o config.nearest)
@@ -102,18 +108,16 @@ theorem problem23
         (L.scalar.square (L.length config.o config.b)) := by
   letI : OrderedScalar.Axioms L.scalar :=
     LengthMeasurement.Axioms.scalar_axioms
-  obtain ⟨cornerCenter,
-      hoCenterI, hoCenter_centerI,
-      hpCenterQ, hpCenter_centerQ⟩ :=
-    config.right_corner_rectangle.1
   have hoIReflection :
-      PointReflection G cornerCenter config.o circle.center :=
+      PointReflection G config.cornerCenter config.o circle.center :=
     midpoint_as_pointReflection G
-      ⟨hoCenterI, hoCenter_centerI⟩
+      ⟨config.o_cornerCenter_center_between,
+        config.o_cornerCenter_center_congruent⟩
   have hpqReflection :
-      PointReflection G cornerCenter config.contactOA config.contactOB :=
+      PointReflection G config.cornerCenter config.contactOA config.contactOB :=
     midpoint_as_pointReflection G
-      ⟨hpCenterQ, hpCenter_centerQ⟩
+      ⟨config.contacts_cornerCenter_between,
+        config.contacts_cornerCenter_congruent⟩
   have hop_iq :
       G.Congruent config.o config.contactOA
         circle.center config.contactOB :=
